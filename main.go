@@ -14,7 +14,7 @@ import (
 func main() {
 	app := &cli.App{
 		Name:           "agos",
-		Version:        "0.1.0",
+		Version:        "0.1.1",
 		HelpName:       "AGOS - adb go screenshare",
 		Description:    "An ADB + SCRCPY wrapper, with automated port discovery",
 		Usage:          "Select a device for screensharing or connect a new one",
