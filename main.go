@@ -26,12 +26,12 @@ func main() {
 				Usage:   "List devices for screensharing",
 				Action: func(c *cli.Context) error {
 					app := cmd.NewAgosApp()
-					err := app.StartAdb()
+					err := app.Adb.StartServer() //.StartAdb()
 					if err != nil {
 						return err
 					}
 
-					devices, err := app.AdbListDevices()
+					devices, err := app.Adb.ListDevices() //.AdbListDevices()
 					if err != nil {
 						return err
 					}
@@ -55,7 +55,7 @@ func main() {
 					fmt.Printf("Selected: %s\n", result)
 					fmt.Printf("Starting action on device %d: %s\n", index+1, result)
 
-					err = app.RunScrcpy(devices[index].Address)
+					err = app.ScrCpy.Run(devices[index].Address)
 					if err != nil {
 						return err
 					}
@@ -99,15 +99,86 @@ func main() {
 					}
 
 					app := cmd.NewAgosApp()
-					err := app.StartAdb()
+					err := app.Adb.StartServer() //.StartAdb()
 					if err != nil {
 						return err
 					}
-					err = app.AdbConnect(ip)
+					err = app.Adb.Connect(ip) //.AdbConnect(ip)
 					if err != nil {
 						return err
 					}
-					err = app.RunScrcpy(ip)
+					err = app.ScrCpy.Run(ip)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
+				Name:    "pair",
+				Aliases: []string{"p"},
+				Usage:   "Pair new device",
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:    "min-port",
+						Value:   32000,
+						Usage:   "Minimum port range",
+						EnvVars: []string{"AGOS_MIN_PORT"},
+					},
+					&cli.IntFlag{
+						Name:    "max-port",
+						Value:   48000,
+						Usage:   "Maximum port range",
+						EnvVars: []string{"AGOS_MAX_PORT"},
+					},
+				},
+				Action: func(c *cli.Context) error {
+					if c.NArg() < 2 {
+						return fmt.Errorf("IP address and pairing code are required as arguments")
+					}
+
+					ip := c.Args().Get(0)
+					if !strings.Contains(ip, ":") {
+						minPort := c.Int("min-port")
+						maxPort := c.Int("max-port")
+
+						port, err := cmd.DiscoverAdbPort(ip, minPort, maxPort)
+						if err != nil {
+							return err
+						}
+						ip = fmt.Sprintf("%s:%d", ip, port)
+					}
+
+					code := c.Args().Get(1)
+					if code == "" {
+						return fmt.Errorf("pairing code cant be empty")
+					}
+
+					app := cmd.NewAgosApp()
+					err := app.Adb.StartServer() //.StartAdb()
+					if err != nil {
+						return err
+					}
+					err = app.Adb.Pair(ip, code) //.AdbPair(ip, code)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
+				Name:    "pair-qr",
+				Aliases: []string{"qr"},
+				Usage:   "Pair new device with QR code",
+				Action: func(c *cli.Context) error {
+					app := cmd.NewAgosApp()
+					err := app.Adb.StartServer() //.StartAdb()
+					if err != nil {
+						return err
+					}
+					err = app.Adb.PairQR() //.AdbPairQr()
 					if err != nil {
 						return err
 					}
