@@ -126,7 +126,7 @@ func (adb *ADB) ListDevices() ([]AdbDevice, error) {
 				continue
 			}
 
-			ipPort := parts[0] // full IP:port
+			ipPort := parts[0] // gui IP:port
 
 			var model string
 			for _, part := range parts {

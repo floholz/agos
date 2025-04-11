@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/floholz/agos/internal/cli"
 	"github.com/floholz/agos/internal/core"
+	"github.com/floholz/agos/internal/ui"
 )
 
 func main() {
 	agos := core.NewAgosApp()
-	cli.LaunchCLI(agos)
+	ui.LaunchUI(agos)
 }
