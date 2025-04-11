@@ -1,10 +1,9 @@
-package cmd
+package core
 
 import (
 	"fmt"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 )
 
@@ -12,14 +11,9 @@ type ScrCpy struct {
 	ScrcpyCmd string
 }
 
-func NewScrCpy() *ScrCpy {
+func NewScrCpy(scrcpyCmd string) *ScrCpy {
 	scrcpy := &ScrCpy{
-		ScrcpyCmd: "scrcpy",
-	}
-	if runtime.GOOS == "windows" {
-		scrcpy.ScrcpyCmd = "bin\\scrcpy.exe"
-	} else {
-		scrcpy.ScrcpyCmd = "./bin/scrcpy"
+		ScrcpyCmd: scrcpyCmd,
 	}
 	return scrcpy
 }

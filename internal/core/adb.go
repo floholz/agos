@@ -1,4 +1,4 @@
-package cmd
+package core
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"github.com/skip2/go-qrcode"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 )
 
 type ADB struct {
-	AdbCmd string
+	AdbCmd    string
+	PortRange *PortRange
 }
 
 type AdbDevice struct {
@@ -24,19 +24,10 @@ type AdbPairingData struct {
 	Password string
 }
 
-type PortRange struct {
-	MinPort int
-	MaxPort int
-}
-
-func NewAdb() *ADB {
+func NewAdb(adbCmd string, portRange *PortRange) *ADB {
 	adb := &ADB{
-		AdbCmd: "adb",
-	}
-	if runtime.GOOS == "windows" {
-		adb.AdbCmd = "bin\\adb.exe"
-	} else {
-		adb.AdbCmd = "./bin/adb"
+		AdbCmd:    adbCmd,
+		PortRange: portRange,
 	}
 	return adb
 }
@@ -78,7 +69,7 @@ func (adb *ADB) Pair(target, code string) error {
 	return adb.Exec("pair", target, code)
 }
 
-func (adb *ADB) PairQR(portRange *PortRange) error {
+func (adb *ADB) PairQR(connectAfterPair bool) error {
 	pairingData, err := generatePairingData()
 	if err != nil {
 		return err
@@ -87,7 +78,7 @@ func (adb *ADB) PairQR(portRange *PortRange) error {
 	if err != nil {
 		return err
 	}
-	device, err := DiscoverZeroconf()
+	device, err := DiscoverAdbPairing()
 	if err != nil {
 		return err
 	}
@@ -101,8 +92,8 @@ func (adb *ADB) PairQR(portRange *PortRange) error {
 		return err
 	}
 
-	if portRange != nil {
-		port, err := DiscoverAdbPort(device.IPv4, *portRange)
+	if connectAfterPair {
+		port, err := DiscoverAdbPort(device.IPv4, *adb.PortRange)
 		if err != nil {
 			return err
 		}
@@ -119,7 +110,7 @@ func (adb *ADB) PairQR(portRange *PortRange) error {
 func (adb *ADB) ListDevices() ([]AdbDevice, error) {
 	var devices []AdbDevice
 	err := adb.ExecCallback(func(outBuf, errBuf strings.Builder) error {
-		fmt.Fprintln(os.Stderr, errBuf.String())
+		_, _ = fmt.Fprintln(os.Stderr, errBuf.String())
 
 		output := outBuf.String()
 

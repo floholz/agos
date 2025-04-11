@@ -1,4 +1,4 @@
-package cmd
+package core
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func DiscoverAdbPort(ip string, portRange PortRange) (int, error) {
 			address := fmt.Sprintf("%s:%d", ip, port)
 			conn, err := net.DialTimeout("tcp", address, 100*time.Millisecond)
 			if err == nil {
-				conn.Close()
+				_ = conn.Close()
 				select {
 				case results <- port:
 				case <-done:
@@ -57,7 +57,7 @@ func DiscoverAdbPort(ip string, portRange PortRange) (int, error) {
 	}
 }
 
-func DiscoverZeroconf() (*DnsDiscoveryResult, error) {
+func DiscoverAdbPairing() (*DnsDiscoveryResult, error) {
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize resolver: %v", err)
