@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/skip2/go-qrcode"
 	"os"
 	"os/exec"
@@ -16,6 +17,16 @@ type ADB struct {
 type AdbDevice struct {
 	Name    string
 	Address string
+}
+
+type AdbPairingData struct {
+	Name     string
+	Password string
+}
+
+type PortRange struct {
+	MinPort int
+	MaxPort int
 }
 
 func NewAdb() *ADB {
@@ -67,15 +78,41 @@ func (adb *ADB) Pair(target, code string) error {
 	return adb.Exec("pair", target, code)
 }
 
-func (adb *ADB) PairQR() error {
-	err := showQr()
+func (adb *ADB) PairQR(portRange *PortRange) error {
+	pairingData, err := generatePairingData()
 	if err != nil {
 		return err
 	}
-	err = startDiscovery()
+	err = showQr(pairingData)
 	if err != nil {
 		return err
 	}
+	device, err := DiscoverZeroconf()
+	if err != nil {
+		return err
+	}
+	if pairingData.Name != device.Instance {
+		return fmt.Errorf("pairing name mismatch")
+	}
+
+	pairAddress := fmt.Sprintf("%s:%d", device.IPv4, device.Port)
+	err = adb.Pair(pairAddress, pairingData.Password)
+	if err != nil {
+		return err
+	}
+
+	if portRange != nil {
+		port, err := DiscoverAdbPort(device.IPv4, *portRange)
+		if err != nil {
+			return err
+		}
+		connectAddress := fmt.Sprintf("%s:%d", device.IPv4, port)
+		err = adb.Connect(connectAddress)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -118,28 +155,30 @@ func (adb *ADB) ListDevices() ([]AdbDevice, error) {
 	return devices, err
 }
 
-func showQr() error {
+func generatePairingData() (*AdbPairingData, error) {
 	// WIFI:T:ADB;S:studio-y&1rAp#B9u;P:{GN1!WXb!ut{;;
-	qrText := fmt.Sprintf("WIFI:T:ADB;S:%s;P:%s;;", "ADB_WIFI_agos", "agos_pw")
-	qr, err := qrcode.New(qrText, qrcode.High)
+	id, err := gonanoid.New()
+	if err != nil {
+		return nil, err
+	}
+	pw, err := gonanoid.New()
+	if err != nil {
+		return nil, err
+	}
+	return &AdbPairingData{
+		Name:     "ADB_WIFI_" + id,
+		Password: pw,
+	}, nil
+}
+
+func showQr(data *AdbPairingData) error {
+	qrText := fmt.Sprintf("WIFI:T:ADB;S:%s;P:%s;;", data.Name, data.Password)
+	qr, err := qrcode.New(qrText, qrcode.Medium)
 	if err != nil {
 		return err
 	}
 
 	qrcodeString := qr.ToSmallString(false)
 	fmt.Println(qrcodeString)
-
 	return nil
-}
-
-func startDiscovery() error {
-	return nil
-}
-
-func connect() error {
-	return nil
-}
-
-func getDevice() {
-
 }

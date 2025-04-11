@@ -14,7 +14,7 @@ import (
 func main() {
 	app := &cli.App{
 		Name:           "agos",
-		Version:        "0.1.1",
+		Version:        "0.2.0",
 		HelpName:       "AGOS - adb go screenshare",
 		Description:    "An ADB + SCRCPY wrapper, with automated port discovery",
 		Usage:          "Select a device for screensharing or connect a new one",
@@ -26,12 +26,12 @@ func main() {
 				Usage:   "List devices for screensharing",
 				Action: func(c *cli.Context) error {
 					app := cmd.NewAgosApp()
-					err := app.Adb.StartServer() //.StartAdb()
+					err := app.Adb.StartServer()
 					if err != nil {
 						return err
 					}
 
-					devices, err := app.Adb.ListDevices() //.AdbListDevices()
+					devices, err := app.Adb.ListDevices()
 					if err != nil {
 						return err
 					}
@@ -91,7 +91,10 @@ func main() {
 						minPort := c.Int("min-port")
 						maxPort := c.Int("max-port")
 
-						port, err := cmd.DiscoverAdbPort(ip, minPort, maxPort)
+						port, err := cmd.DiscoverAdbPort(ip, cmd.PortRange{
+							MinPort: minPort,
+							MaxPort: maxPort,
+						})
 						if err != nil {
 							return err
 						}
@@ -99,11 +102,11 @@ func main() {
 					}
 
 					app := cmd.NewAgosApp()
-					err := app.Adb.StartServer() //.StartAdb()
+					err := app.Adb.StartServer()
 					if err != nil {
 						return err
 					}
-					err = app.Adb.Connect(ip) //.AdbConnect(ip)
+					err = app.Adb.Connect(ip)
 					if err != nil {
 						return err
 					}
@@ -143,7 +146,10 @@ func main() {
 						minPort := c.Int("min-port")
 						maxPort := c.Int("max-port")
 
-						port, err := cmd.DiscoverAdbPort(ip, minPort, maxPort)
+						port, err := cmd.DiscoverAdbPort(ip, cmd.PortRange{
+							MinPort: minPort,
+							MaxPort: maxPort,
+						})
 						if err != nil {
 							return err
 						}
@@ -156,11 +162,11 @@ func main() {
 					}
 
 					app := cmd.NewAgosApp()
-					err := app.Adb.StartServer() //.StartAdb()
+					err := app.Adb.StartServer()
 					if err != nil {
 						return err
 					}
-					err = app.Adb.Pair(ip, code) //.AdbPair(ip, code)
+					err = app.Adb.Pair(ip, code)
 					if err != nil {
 						return err
 					}
@@ -172,13 +178,34 @@ func main() {
 				Name:    "pair-qr",
 				Aliases: []string{"qr"},
 				Usage:   "Pair new device with QR code",
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:    "min-port",
+						Value:   32000,
+						Usage:   "Minimum port range",
+						EnvVars: []string{"AGOS_MIN_PORT"},
+					},
+					&cli.IntFlag{
+						Name:    "max-port",
+						Value:   48000,
+						Usage:   "Maximum port range",
+						EnvVars: []string{"AGOS_MAX_PORT"},
+					},
+				},
 				Action: func(c *cli.Context) error {
 					app := cmd.NewAgosApp()
-					err := app.Adb.StartServer() //.StartAdb()
+					err := app.Adb.StartServer()
 					if err != nil {
 						return err
 					}
-					err = app.Adb.PairQR() //.AdbPairQr()
+
+					minPort := c.Int("min-port")
+					maxPort := c.Int("max-port")
+
+					err = app.Adb.PairQR(&cmd.PortRange{
+						MinPort: minPort,
+						MaxPort: maxPort,
+					})
 					if err != nil {
 						return err
 					}
