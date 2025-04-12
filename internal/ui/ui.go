@@ -22,7 +22,7 @@ func LaunchUI(agos *core.AgosApp) {
 	agosApp = agos
 	a := app.NewWithID(core.MetaAppId)
 	fyneWindow = a.NewWindow("AGOS")
-	fyneWindow.SetIcon(GetAgosIcon())
+	fyneWindow.SetIcon(core.ResourceLogoPng)
 	fyneWindow.Resize(fyne.NewSize(600, 800))
 
 	gotoHomePage()
@@ -161,7 +161,7 @@ func gotoAboutPage() {
 	aboutText := widget.NewRichTextFromMarkdown(AboutMarkdown)
 	aboutText.Wrapping = fyne.TextWrapWord
 
-	logoImg := canvas.NewImageFromFile("assets/logo.png")
+	logoImg := canvas.NewImageFromResource(core.ResourceLogoPng)
 	logoImg.FillMode = canvas.ImageFillContain
 	logoImg.SetMinSize(fyne.Size{Width: 128, Height: 128})
 

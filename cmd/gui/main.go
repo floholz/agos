@@ -1,3 +1,5 @@
+//go:generate fyne bundle -o ../../internal/core/bundled.go ../../assets/logo.png
+
 package main
 
 import (
