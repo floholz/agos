@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"github.com/floholz/agos/internal/core"
-	"github.com/floholz/agos/internal/ui"
 	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli/v2"
 	"log"
@@ -13,8 +12,8 @@ import (
 
 func LaunchCLI(agos *core.AgosApp) {
 	app := &cli.App{
-		Name:           "agos",
-		Version:        ui.AgosVersion,
+		Name:           core.MetaName,
+		Version:        core.MetaVersion,
 		HelpName:       "AGOS - adb go screenshare",
 		Description:    "An ADB + SCRCPY wrapper, with automated port discovery",
 		Usage:          "Select a device for screensharing or connect a new one",

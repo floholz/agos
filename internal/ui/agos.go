@@ -1,13 +1,14 @@
+//go:build ui
+
 package ui
 
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
+	"github.com/floholz/agos/internal/core"
 )
 
-var AgosVersion = "0.3.0"
-
-var AboutMarkdown = "## AGOS v" + AgosVersion +
+var AboutMarkdown = "## AGOS v" + core.MetaVersion +
 	`
 Agos is a wrapper application for adb & scrcpy. It was created to make it easy and simple to screenshare from any 
 android device to your pc. To simplify the adb setup process even more, Agos provides the functionality to automatically 

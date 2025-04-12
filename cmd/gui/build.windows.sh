@@ -1,0 +1,1 @@
+﻿fyne package --os windows --tags ui --icon ../../assets/logo-color.png

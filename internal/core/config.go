@@ -25,11 +25,8 @@ func defaultConfig() *Config {
 		},
 	}
 	if runtime.GOOS == "windows" {
-		config.AdbPath = "bin\\adb.exe"
-		config.ScrCpyPath = "bin\\scrcpy.exe"
-	} else {
-		config.AdbPath = "./bin/adb"
-		config.ScrCpyPath = "./bin/scrcpy"
+		config.AdbPath = "bin\\windows\\adb.exe"
+		config.ScrCpyPath = "bin\\windows\\scrcpy.exe"
 	}
 	return config
 }
