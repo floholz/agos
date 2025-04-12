@@ -52,7 +52,7 @@ func DiscoverAdbPort(ip string, portRange PortRange) (int, error) {
 	select {
 	case port := <-results:
 		return port, nil
-	case <-time.After(5 * time.Second): // Total timeout for the scan operation
+	case <-time.After(15 * time.Second): // Total timeout for the scan operation
 		return 0, fmt.Errorf("no open ADB port found on %s", ip)
 	}
 }

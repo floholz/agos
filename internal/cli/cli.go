@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/floholz/agos/internal/core"
+	"github.com/floholz/agos/internal/ui"
 	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli/v2"
 	"log"
@@ -13,7 +14,7 @@ import (
 func LaunchCLI(agos *core.AgosApp) {
 	app := &cli.App{
 		Name:           "agos",
-		Version:        "0.2.0",
+		Version:        ui.AgosVersion,
 		HelpName:       "AGOS - adb go screenshare",
 		Description:    "An ADB + SCRCPY wrapper, with automated port discovery",
 		Usage:          "Select a device for screensharing or connect a new one",
@@ -176,7 +177,12 @@ func LaunchCLI(agos *core.AgosApp) {
 
 					connect := !c.Bool("no-connect")
 
-					err = agos.Adb.PairQR(connect)
+					_, pairingData, err := agos.Adb.GeneratePairQR()
+					if err != nil {
+						return err
+					}
+
+					err = agos.Adb.PairQR(pairingData, connect)
 					if err != nil {
 						return err
 					}

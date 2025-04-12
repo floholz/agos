@@ -4,6 +4,7 @@ import (
 	"fmt"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/skip2/go-qrcode"
+	"image"
 	"os"
 	"os/exec"
 	"strings"
@@ -65,19 +66,35 @@ func (adb *ADB) Connect(target string) error {
 	return adb.Exec("connect", target)
 }
 
+func (adb *ADB) Disconnect(target string) error {
+	return adb.Exec("disconnect", target)
+}
+
 func (adb *ADB) Pair(target, code string) error {
 	return adb.Exec("pair", target, code)
 }
 
-func (adb *ADB) PairQR(connectAfterPair bool) error {
+func (adb *ADB) GeneratePairQR() (image.Image, *AdbPairingData, error) {
 	pairingData, err := generatePairingData()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	err = showQr(pairingData)
+
+	qrText := fmt.Sprintf("WIFI:T:ADB;S:%s;P:%s;;", pairingData.Name, pairingData.Password)
+	qr, err := qrcode.New(qrText, qrcode.Medium)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
+
+	qrcodeString := qr.ToSmallString(false)
+	fmt.Println(qrcodeString)
+
+	img := qr.Image(-8)
+
+	return img, pairingData, nil
+}
+
+func (adb *ADB) PairQR(pairingData *AdbPairingData, connectAfterPair bool) error {
 	device, err := DiscoverAdbPairing()
 	if err != nil {
 		return err
@@ -160,16 +177,4 @@ func generatePairingData() (*AdbPairingData, error) {
 		Name:     "ADB_WIFI_" + id,
 		Password: pw,
 	}, nil
-}
-
-func showQr(data *AdbPairingData) error {
-	qrText := fmt.Sprintf("WIFI:T:ADB;S:%s;P:%s;;", data.Name, data.Password)
-	qr, err := qrcode.New(qrText, qrcode.Medium)
-	if err != nil {
-		return err
-	}
-
-	qrcodeString := qr.ToSmallString(false)
-	fmt.Println(qrcodeString)
-	return nil
 }
